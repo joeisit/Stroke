@@ -1,0 +1,793 @@
+---
+header-includes:
+- \usepackage{graphicx}
+output: pdf_document
+---
+
+```{r image harvardx, echo=FALSE, fig.align='center', out.width="25%"}
+knitr::include_graphics("images/harvardx.jpeg")
+```
+
+
+\definecolor{greenJoe}{RGB}{0,128,128}
+\definecolor{blueJoe}{RGB}{0,0,250}
+\definecolor{redJoe}{RGB}{200,0,0}
+
+
+\begin{center}
+\huge{ \textcolor{blueJoe}{\textbf{Stroke Report}} }
+\end{center}
+&nbsp;
+
+\begin{center}  
+\large{\textcolor{greenJoe}{\textbf{Ing. José Ramón Riesgo Escovar}} }
+\end{center}
+
+&nbsp;
+  
+\begin{center}
+May 2020
+\end{center}
+
+&nbsp;
+  
+\begin{center}
+\Large { \textcolor{blue}{\textbf{INTRODUCTION TO STROKE  } } }
+\end{center}
+  
+&nbsp;
+  
+&nbsp;  
+  
+Stroke is one of the leading causes of death globally. Sometimes it is also called a brain attack. A stroke happens when something is blocking the blood supply to a part of the brain. Also a Stroke happens when a vessel in the brain bursts. In either case, this stops the flow of blood and due to this, part of the brain becomes damage or dies. Unfortunately when this happens it can cause lasting brain damage, long-term disability and even in some cases the death.
+Our brain controls our movements, stores our memories, and it is the source of our thoughts, emotions and our language. Besides these functions also the brain controls functions like breathing and controls our digestion.
+
+Our brain uses 20% of the oxygen we breathe and the arteries deliver our oxigen-rich blood to all the sections of our brain.
+
+```{r image stroke, echo=FALSE, fig.align='center', out.width="50%"}
+knitr::include_graphics("images/about_stroke.jpg")
+```
+
+\begin{center}
+\scriptsize {Image taken from CDC.gob}
+\end{center}
+
+\begin{center}
+\footnotesize {A stroke happens when a blood clot blocks blood flow to the \\ brain or when there is a bursts that prevents the flow of blood} 
+\end{center}
+
+&nbsp;
+
+The stroke is the third major cause of disability. Long term disability affects people severely, in terms of their productive life.
+The aim of this report is to identify the risk factors and with them be able to predict if someone has high risk of having a Stroke.
+
+The patient dataset  was obtain from [**Kaggle**](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset/) the process and methods to ascertain whether a variable is a risk factor will be evaluated and described. We will visualized and discovered insights of the dataset, ending with a conclusion and some ideas and suggestions for future work on the reserach for early symptons that could help prevent an actual Stroke.
+
+From Kaggle we get the description of the columns in our dataset:
+
+  1) id: unique identifier
+  2) gender: Male, Female or Other
+  3) age: age of the patient
+  4) hypertension: 0 if the patient doesn't have hypertension, 1 if the patient has hypertension 
+  5) heart_disease: 0 if the patient doesn't have any heart diseases, 1 if the patient has a heart disease
+  6) ever_married: "No" or "Yes"
+  7) work_type: "children", "Govt_jov", "Never_worked", "Private" or "Self-employed"
+  8) Residence_type: "Rural" or "Urban"
+  9) avg_glucose_level: average glucose level in blood
+  10) bmi: body mass index
+  11) smoking_status: "formerly smoked", "never smoked", "smokes" or "Unknown"*
+  12) stroke: 1 if the patient had a stroke or 0 if not
+    
+
+*Note: "Unknown" in smoking_status means that the information is unavailable for this patient
+
+In the next section we will first do a data preprocessing and then we will execute the exploratory data analysis and then work on the models.
+
+\pagebreak
+
+\begin{center}
+\Large { \textcolor{blueJoe} {\textbf{DATA PREPROCESSING ANALYSIS:} } }
+\end{center}
+
+```{r Libraries Needed, include=FALSE}
+#########################################
+# LOADING ALL LIBRARIES THAT WILL BE USED
+#########################################
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(qwraps2)
+library(markdown)
+library(lattice)
+library(caret)
+library(knitr)
+library(corrplot)
+library(mda)
+library(arm)
+#########################################
+```
+
+&nbsp;
+
+The Dataset consists of:  
+
+```{r Load and dimension, echo=TRUE}
+stroke_data <- read.csv("stroke.csv", header = TRUE)
+dim(stroke_data)
+```
+
+
+We have 5110 records and 12 columns, 11 potential predictors and the column that indicates if the patient got actually a stroke or not.
+
+Now we will be exploring one by one the potential predictors:
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{1) ID : Unique Identifier } }
+
+This is a number to identify the patient but it is irrelevant because does not provide any meaningful information for our future models so we will delete this column from our datset by applying this code: 
+
+```{r eliminate id, echo=TRUE}
+stroke_data <- subset( stroke_data, select = -id )
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{2) Gender: The specific gender of the patients } }
+
+
+With the following will generate the actual distribution of the gender within the dataset:
+
+```{r Gender distribution, echo=TRUE}
+stroke_data %>%
+  group_by(gender) %>%
+  summarise(total = n())
+```
+
+We see that there is just one record of an "Other" gender, having just one record is insignificant to the dataset and the future predicion models so we will eliminate it from the dataset using this code:
+
+```{r Elimiate Other, echo=TRUE}
+stroke_data <- subset (stroke_data, stroke_data$gender !="Other")
+```
+
+Now the dataset has the following distribution of Gender of Patients:
+  
+```{r Pie chart of Gender, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+# We are going to generate a pie chart of the distribution between genders
+stroke_data %>%
+  group_by(gender) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=gender)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100), "%")),
+            position = position_stack(vjust = 0.5)) +
+  # Define blue colors
+  scale_fill_manual(values=c("#55DDE0", "#33658A")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT GENDER DISTRIBUTION") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 8, 
+                                  face = "bold", hjust = 0.5))
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{3) Age: Distribution of the age of the patients } }
+
+&nbsp;
+
+Generating the summary of how the age is distributed within our patients
+
+```{r Summary of Age, echo=TRUE}
+  summary(stroke_data$age)
+```
+
+The next chart shows how the patients are distribute by grouping them in ranges of 10 years of age
+
+```{r Distribution of Age, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  mutate(cuts = cut(age, seq(from = 0, to = 100, by = 10))) %>% 
+  group_by(cuts) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x=cuts,y=total)) +
+  geom_bar(stat= "identity", fill = "#00AAFF") +
+  scale_fill_gradient() +
+  labs(title = " DISTRIBUTION OF AGE OF PATIENTS") +
+  xlab("GROUP BY RANGE OF 10 YEARS") + 
+  ylab("NUMBER OF PATIENTS WITHIN RANGE") +
+  theme(plot.title = element_text(color = "#0066FF", size = 8, 
+                                  face = "bold", hjust = 0.5)) +
+  theme(axis.title.x = element_text(color = "#777777", size = 7, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.title.y = element_text(color = "#777777", size = 7, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5, angle = 90)) +
+  theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) 
+```
+
+With the following BoxPlot we can see very clear that there is a tendency for older patient to have a Stroke:
+
+```{r BoxPlot Age vs Status, echo=FALSE, fig.height=2, fig.width=3, fig.align='center'}
+stroke_data %>%
+  mutate(text = ifelse(stroke==0,"Healthy","Stroke")) %>%
+  ggplot(aes(x = text, y = age)) +
+  geom_boxplot(fill=c("#FF0000","#44FFFF"), colour= "#0000FF") +
+  scale_y_continuous(name = "Patients Age") +
+  scale_x_discrete(name = "Patients Status") +
+  ggtitle("PATIENTS") +
+  theme(plot.title = element_text(color = "#0066FF", size = 13, 
+                                  face = "bold", hjust = 0.5)) +
+  theme(axis.title.x = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.title.y = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) +
+  theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) 
+```
+
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{4) Hypertension: Information if the patient had hypertension or not } }
+
+
+With the following code we visualized the total patients that have hypertension and the ones without hypertension
+
+```{r Distribution Hypertension, echo=TRUE}
+stroke_data %>%
+  mutate(text = ifelse(hypertension==0,"Without Hypertension","With Hypertension")) %>%
+  group_by(text) %>%
+  summarise(total = n())
+```
+
+Showing in a pie chart the hypertension distribution within our set:
+
+```{r Chart of Hypertension, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  mutate(text = ifelse(hypertension==0,"Without Hypertension","With Hypertension")) %>%
+  group_by(text) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=text)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100), "%")),
+            position = position_stack(vjust = 0.5), size= 3) +
+  # Define blue colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT HYPERTENSION DISTRIBUTION") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 8, 
+                                  face = "bold", hjust = 0.5))
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{5) Heart Disease: Information if the patient had a problem in his heart or not } }
+
+&nbsp;
+
+
+With the following code we visualized the total patients that have heart problems and the ones without any problem in their heart
+
+```{r Distribution of Heart Problem, echo=TRUE}
+stroke_data %>%
+  mutate(text = ifelse(heart_disease==0,"Without Heart Problem","With Heart Problem")) %>%
+  group_by(text) %>%
+  summarise(total = n())
+```
+
+The following pie chart shows the distribution of the patients with problems in their heart:
+
+&nbsp;
+
+```{r Chart of Heart Problems, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  mutate(text = ifelse(heart_disease==0,"Without Heart Problem","With Heart Problem")) %>%
+  group_by(text) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=text)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100), "%")),
+            position = position_stack(vjust = 0.5), color = "#000000", size=3) +
+  # Define blue colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT HEART DISEASE DISTRIBUTION") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 7, 
+                                  face = "bold", hjust = 0.5))
+```
+
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{6) ever\_married: Information if the patient had been married or not } }
+
+
+With the following code we are able to visualize how many patients were married and how many were never married:
+
+```{r Number of married patients, echo=TRUE}
+stroke_data %>%
+  mutate(text = ifelse(ever_married=="Yes","Married","Not Married")) %>%
+  group_by(text) %>%
+  summarise(total = n())
+```
+
+The following pie chart shows the distribution of the Patients that were Married against the ones that were never married:
+
+```{r Pie Chart of Married, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  mutate(text = ifelse(ever_married=="Yes","Married","Not Married")) %>%
+  group_by(text) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=text)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100), "%")),
+            position = position_stack(vjust = 0.5), color = "#000000") +
+  # Define blue colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT MARRIED DISTRIBUTION") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 7, 
+                                  face = "bold", hjust = 0.5))
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{7) work\_type: We will show the information if the patient have work and what type of work } }
+
+With the following code shows the amount of the patients by their work situation unless they are children:
+
+```{r Work  type distribution, echo=TRUE}
+stroke_data %>%
+  group_by(work_type) %>%
+  summarise(total = n())
+```
+
+With the following code we will show a pie chart with the work distribution of the patients:
+
+```{r Chart Distribution work type, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  group_by(work_type) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=work_type)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100,digits = 1), "%")),
+            position = position_stack(vjust = 0.5), color = "#FFFFFF", size= 2) +
+  # Define blue colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF", "#FFAAFF", "#3322AA", "#11FFAA")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT WORK DISTRIBUTION") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 7, 
+                                  face = "bold", hjust = 0.5))
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{8) Residence\_type: defines where the patients life in urban area or rural area } }
+ 
+
+With the following code summarizes where patients residence is:
+
+```{r Distribution of Residence, echo=TRUE}
+stroke_data %>%
+  group_by(Residence_type) %>%
+  summarise(total = n())
+```
+
+The following is a pie chart showing the distribution of the patients residence:
+
+```{r Pie Chart of residence, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  group_by(Residence_type) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=Residence_type)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100), "%")),
+            position = position_stack(vjust = 0.5), color = "#FFFFFF") +
+  # Define blue colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT RESIDENCE DISTRIBUTION") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 7, 
+                                  face = "bold", hjust = 0.5))
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{9) avg\_glucose\_level: defines the glucose levels of the patients in the set } }
+
+With the following code we generate the summary of of the statistics of the average glucose level with the dataset: 
+
+```{r Summary of aveage glucose level, echo=TRUE}
+summary(stroke_data$avg_glucose_level)
+```
+
+&nbsp;
+
+The following chart shows the distribution in ranges from the lower limit to the higher limit with increments of 10 units:
+
+```{r Chart distibution of glucose, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  mutate(cuts = cut(avg_glucose_level, seq(from = 50, to = 280, by = 10))) %>% 
+  group_by(cuts) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x=cuts,y=total)) +
+  geom_bar(stat= "identity", fill = "#00AAFF") +
+  scale_fill_gradient() +
+  labs(title = " DISTRIBUTION OF AVERAGE GLUCOSE LEVELS") +
+  xlab("GROUP BY RANGE OF 10 LEVELES") + 
+  ylab("NUMBER OF PATIENTS WITHIN RANGE") +
+  theme(plot.title = element_text(color = "#0066FF", size = 8, 
+                                  face = "bold", hjust = 0.5)) +
+  theme(axis.title.x = element_text(color = "#777777", size = 7, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.title.y = element_text(color = "#777777", size = 7, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5, angle = 90)) +
+  theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) 
+```
+
+We show a box plot of the patients that had a stroke as well as the ones healthy:
+
+```{r Boxplot of Glucose, echo=FALSE, fig.height=2, fig.width=3, fig.align='center'}
+stroke_data %>%
+  mutate(text = ifelse(stroke==0,"Healthy","Stroke")) %>%
+  ggplot(aes(x = text, y = avg_glucose_level)) +
+  geom_boxplot(fill=c("#FF0000","#44FFFF"), colour= "#0000FF") +
+  scale_y_continuous(name = "Patients Glucose Level") +
+  scale_x_discrete(name = "Patients Status") +
+  ggtitle("PATIENTS") +
+  theme(plot.title = element_text(color = "#0066FF", size = 13, 
+                                  face = "bold", hjust = 0.5)) +
+  theme(axis.title.x = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.title.y = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) +
+  theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) 
+```
+
+The patients with high level of glucose tend to be more prone to have a Stroke.
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{10) bmi: defines the Body Mass Index of the patients in the set } }
+ 
+
+Reviewing the information of the Body Mass Index (bmi) levels, there are patients without this information with an N/A in these row and also we identify that the values of the bmi are strings within the dataset instead of numbers, with the following code we are showing the summary of bmi
+
+```{r summary of bmi, echo=TRUE, warning=FALSE}
+# To avoid warning due to N/A will disable them during this code execution
+options(warn = -1) # To avoid Warning due to N/A
+summary(as.numeric(stroke_data$bmi), na.rm=TRUE)
+```
+
+With the following code we will review what patients do not have bmi information and had not had any stroke:
+
+```{r bmi without stroke, echo=TRUE, warning=FALSE}
+# How many records we have without bmi information and that have not had any stroke
+sum(stroke_data$bmi=="N/A" & stroke_data$stroke==0)
+```
+
+With the following code we will review what patients that do not have bmi information and had a stroke:
+
+```{r bmi and stroke, echo=TRUE, warning=FALSE}
+# How many records we have without bmi information and that had a stroke
+sum(stroke_data$bmi=="N/A" & stroke_data$stroke==1)
+```
+
+Due that these 201 registries ( 161 that have not suffer a stroke and 40 that suffer a stroke ) we consider this relevant for our study and predictions of Stroke, so we will be calculate the average bmi of the dataset using this code:
+
+```{r Calculate bmi mean, echo=TRUE, warning=FALSE}
+# Calculate the mean of bmi
+bmimean <- mean(as.numeric(stroke_data$bmi), na.rm = TRUE)
+```
+
+
+Adding a new column in our dataset with the patients bmi number, instead of the string and also for the patients without bmi information the mean of bmi will be assigned to them. The following code achieves this:
+
+```{r New column with bmi numbers, echo=TRUE, warning=TRUE}
+stroke_data <- stroke_data %>%
+  mutate( bmi_num = ifelse(bmi=="N/A",bmimean,as.numeric(bmi)))
+# Return to normal warnings 
+options(warn = 0L)
+# Clearing the temporary variable bmimean to keep the environment clean
+rm(bmimean)
+```
+
+
+The following boxplot shows the  distribution of the patients that had a stroke and the healthy ones:
+
+```{r Boxplot Undajusted BMI, echo=FALSE, fig.height=2, fig.width=3, fig.align='center'}
+stroke_data %>%
+  mutate(text = ifelse(stroke==0,"Healthy","Stroke")) %>%
+  ggplot(aes(x = text, y = bmi_num)) +
+  geom_boxplot(fill=c("#FF0000","#44FFFF"), colour= "#0000FF") +
+  scale_y_continuous(name = "Patients BMI Level") +
+  scale_x_discrete(name = "Patients Status") +
+  ggtitle("PATIENTS") +
+  theme(plot.title = element_text(color = "#0066FF", size = 13, 
+                                  face = "bold", hjust = 0.5)) +
+  theme(axis.title.x = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.title.y = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) +
+  theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) 
+```
+
+In a research of the BMI information we see the following pictures:
+
+```{r Picture BMI distribution, echo=FALSE, fig.align='center', fig.height=4, fig.width=4}
+knitr::include_graphics("images/bmi.jpg")
+```
+
+
+As seen here, anyone above 50 is extremely obese, so values on top of 50 of BMI seem out of range 
+All the outliers of patients above 50 will be adjusted 50 to avoid distortion in the models
+
+With the following code we will adjust this:
+
+```{r Adjust the bmi more than 50, echo=TRUE}
+stroke_data <- stroke_data %>%
+  mutate(bmi_num = ifelse(bmi_num >=50,50, bmi_num))
+```
+
+Showing the boxplot after the adjustment:
+
+```{r Adjusted boxplot BMI, echo=FALSE, fig.height=2, fig.width=3, fig.align='center'}
+stroke_data %>%
+  mutate(text = ifelse(stroke==0,"Healthy","Stroke")) %>%
+  ggplot(aes(x = text, y = bmi_num)) +
+  geom_boxplot(fill=c("#FF0000","#44FFFF"), colour= "#0000FF") +
+  scale_y_continuous(name = "Patients BMI Level") +
+  scale_x_discrete(name = "Patients Status") +
+  ggtitle("PATIENTS") +
+  theme(plot.title = element_text(color = "#0066FF", size = 13, 
+                                  face = "bold", hjust = 0.5)) +
+  theme(axis.title.x = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.title.y = element_text(color = "#777777", size = 11, 
+                                    face = "bold", hjust = 0.5)) +
+  theme(axis.text.x = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) +
+  theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
+                                   face = "bold", hjust = 0.5)) 
+```
+
+We do not see any specific trend with the BMI distribution between healthy patients and patients that had a stroke.
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{11) smoking\_status: defines the patient relation to smoking } }
+ 
+
+With the following code we show the distribution of the patients based on their smoking status:
+
+```{r Distribution of Status, echo=TRUE}
+stroke_data %>%
+  group_by(smoking_status) %>%
+  summarise(total = n())
+```
+
+In the following pie chart we observe the distribution of the smoking habits of the patients:
+
+```{r Pie of Smoking, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  group_by(smoking_status) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=smoking_status)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100,digits = 1), "%")),
+            position = position_stack(vjust = 0.5), color = "#FFFFFF", size=2) +
+  # Define the colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF", "#44AAFF", "#3322AA")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "PATIENT SMOKING HABITS") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 7, 
+                                  face = "bold", hjust = 0.5))
+```
+
+\begin{center}
+\footnotesize {Note: "Unknown" in smoking\_status means that the information is unavailable for this patient} 
+\end{center}
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{Stoke Patient in the Dataset:  } }
+
+
+With the following code we visualize the amount of stoke patients against the health patients in the dataset:
+
+```{r stroke distribution, echo=TRUE}
+stroke_data %>%
+  mutate(text = ifelse(stroke==0,"Healthy Patients","Stroke Patients")) %>%
+  group_by(text) %>%
+  summarise(total = n())
+```
+
+The following Pie chart show the distribution between Stroke Patients and Healthy Patients
+
+```{r Pie Distribution Stroke, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
+stroke_data %>%
+  mutate(text = ifelse(stroke==0,"Healthy Patients","Stroke Patients")) %>%
+  group_by(text) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(x="", y=total, fill=text)) +
+  geom_bar(stat="identity", width=1) +
+  # Use the Polar System for generating the Pie
+  coord_polar("y", start=0) +
+  # Define the Percentages inside the Slices
+  geom_text(aes(label = paste0(round(total/nrow(stroke_data) *100), "%")),
+            position = position_stack(vjust = 0.5), color = "#FFFFFF") +
+  # Define blue colors
+  scale_fill_manual(values=c("#55AAE0", "#3365FF")) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "STOKE PATIENTS VS. HEALTH PATIENTS ") +
+  theme_classic() +
+  # Make sure that there are no additional labels generated
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # Center the title and make it Blue
+  theme(plot.title = element_text(color = "#0099FF", size = 6, 
+                                  face = "bold", hjust = 0.5))
+```
+
+&nbsp;
+
+\textcolor{blueJoe}{\textbf{General and preparation for models } }
+
+For a correlation check it only accepts numerical variables and also for fitting models, so we are preprocessing all categorical variables to numbers, encoding them.
+Also we will scale age, avg\_glucose\_level and bmi because if we keep predictors that are measured at different scales they will not contribute equally to our fitting models and could create a bias. To deal with this possible problem we will standardized the age, avg\_glucose\_level and bmi to have a $(\mu =0,\sigma=1)$ before we start the fitting of the models
+
+The following code achieves all the transformation:
+
+```{r Transformation to Numbers, echo=TRUE, warning=FALSE}
+# mean of age
+age_mean <- mean(stroke_data$age)
+# sd of age
+age_sd <- sd(stroke_data$age)
+# mean of glucose
+glucose_mean <- mean(stroke_data$avg_glucose_level)
+# sd of glucose
+glucose_sd <- sd(stroke_data$avg_glucose_level)
+# mean of bmi
+bmi_mean <- mean(stroke_data$bmi_num)
+# sd of bmi
+bmi_sd <- sd(stroke_data$bmi_num)
+
+# We need to change our categorical variables to 
+stroke_data_num <- stroke_data %>%
+  # Gender: Female 0, Male 1
+  mutate(gender_num=ifelse(gender=="Female",0,1)) %>%
+  # Married: Not_Married 0, Married 1
+  mutate(married_num=ifelse(ever_married=="Yes",1,0)) %>%
+  # In the following section we will be passing from text to numbers of work type
+  # children 0, Govt_job 1, Never_worked2, Private 3, Self-employed 4
+  mutate(work_type_num=sapply(work_type, function(x)
+    switch(x,"children"= 0,"Govt_job"= 1,"Never_worked"= 2,"Private"= 3,
+           "Self-employed"= 4))) %>%
+  # Residence_type: Rural 0, Urban 1
+  mutate(Residence_type_num=ifelse(Residence_type=="Urban",1,0)) %>%
+  # In the following section we will be passing from text to numbers of smoking status
+  # formerly smoked 0, never smoked 1, smokes 2, Unknown 3
+  mutate(smoking_status_num=sapply(smoking_status, function(x)
+    switch(x,"formerly smoked"= 0,"never smoked"= 1,"smokes"= 2,"Unknown"= 3))) %>%
+  # Adjust/Fit the values of age
+  mutate(age_fit=((age - age_mean)/age_sd)) %>%
+  # Adjust/Fit the values of glucose
+  mutate(glucose_fit=((avg_glucose_level - glucose_mean)/glucose_sd)) %>%
+  # Adjust/Fit the values of bmi
+  mutate(bmi_fit=((bmi_num - bmi_mean)/bmi_sd)) %>%
+  dplyr::select(gender=gender_num, age=age_fit, hypertension, 
+         heart_disease, ever_married=married_num, 
+         work_type=work_type_num, Residence_type=Residence_type_num,
+         avg_glucose= glucose_fit, bmi = bmi_fit, 
+         smoking_status=smoking_status_num, stroke ) 
+
+# We remove the temporary values to keep as clean as possible the environment
+rm(age_mean,age_sd,bmi_mean,bmi_sd,glucose_mean,glucose_sd)
+```
+
+This is the correlation matrix:
+
+```{r Correlation Matrix, echo=FALSE, fig.align='center', fig.height=6, fig.width=6}
+corrplot::corrplot(cor(stroke_data_num),method = "number",
+          bg="#000000", 
+          na.label.col = "#FFFFFF")
+```
+
+There seems to be Multicollinearity between age and ever_married because we have a high correlation of 0.68 in principle age contains more information if a patient is susceptible to a stroke and we will discard ever_married from our predictors, the following code will execute this:
+
+```{r Delete ever_married, echo=TRUE, warning=FALSE}
+stroke_data_num <- subset( stroke_data_num, select = -ever_married )
+```
+
+ 
+The following is the Headmap of the predictors: 
+
+```{r HeatMap, echo=FALSE, fig.height=4, fig.width=4, fig.align='center'}
+heatmap(cor(stroke_data_num), margins = c(6,6))
+```
+
+ 
+&nbsp;
+
+
+\begin{center}
+\large { \textcolor{blueJoe}{\textbf{MODELS}} }
+\end{center}
+
+
+\pagebreak
+
+
+\begin{center}
+\Large { \textcolor{blue}{\textbf{CONCLUSION} } }
+\end{center}
+
+
