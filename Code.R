@@ -736,6 +736,9 @@ stroke_patients_predicted <- sum(glm_predictions=="S")
 # I generate a Table with all the Methods and the Accuracy of each
 accuracy_results <- data.frame(METHOD = "glm", ACCURACY = model_accuracy, 
                                STROKE_PATIENTS = stroke_patients_predicted)
+# Table of output
+accuracy_results %>% knitr::kable()
+
 
 # We apply the method "qda" to the training set
 generate_qda <- train(train_x, train_y, method = "qda")
@@ -749,6 +752,8 @@ stroke_patients_predicted <- sum(qda_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "qda", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
 
 
 # We apply the method "gamLoess" to the training set
@@ -763,6 +768,8 @@ stroke_patients_predicted <- sum(gamloess_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "gamLoess", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
 
 # We apply the method knn to the training set
 generate_knn <- train(train_x, train_y, method = "knn",
@@ -777,9 +784,12 @@ stroke_patients_predicted <- sum(knn_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "knn", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+
 
 # We apply the method rf to the training set
-# We apply the tuning from 1 to 13 of odd numbers
+# We apply the tuning from 9 to 11 
 tuning <- data.frame(mtry = c(  9, 11))
 # We apply the method rf
 generate_rf <- train(train_x, train_y, method = "rf",
@@ -794,6 +804,9 @@ stroke_patients_predicted <- sum(rf_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "rf", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+
 
 # The predict_kmeans() function defined here takes two arguments - a matrix of
 # observations x and a k-means object k - and assigns each row of x to a cluster
@@ -806,11 +819,9 @@ predict_kmeans <- function(x, k) {
   })
   max.col(-t(distances))  # select cluster with min distance to center
 }
-
 # Perform k-means clustering on the training set with 2 
 # centers and assign the output to k. 
 k <- kmeans(train_x, centers = 2)
-
 # Calculate the predictions with the different "k"
 kmean_predictions <- ifelse(predict_kmeans(test_x,k)==1,"S", "H")
 # Calculate the accuracy of the model kmean
@@ -821,6 +832,8 @@ stroke_patients_predicted <- sum(kmean_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "k-means", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
 
 
 # We apply the method "bam" to the training set
@@ -835,6 +848,8 @@ stroke_patients_predicted <- sum(bam_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "bam", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
 
 # We apply the method "cforest" to the training set
 # We apply the tuning from 3 to 7 of odd numbers
@@ -852,6 +867,8 @@ stroke_patients_predicted <- sum(cforest_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "cforest", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
 
 # We apply the method "bayesglm" to the training set
 generate_bayesglm <- train(train_x, train_y, method = "bayesglm")
@@ -865,6 +882,8 @@ stroke_patients_predicted <- sum(bayesglm_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "bayesglm", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
 
 
 # We apply the method "pda2" to the training set
@@ -879,11 +898,11 @@ stroke_patients_predicted <- sum(pda2_predictions=="S")
 accuracy_results <- bind_rows(accuracy_results,
                               data.frame(METHOD = "pda2", ACCURACY = model_accuracy, 
                                          STROKE_PATIENTS = stroke_patients_predicted))
-
 # Show the table with all the values
 accuracy_results %>% knitr::kable()
 
-# We will generate an ensemble with athe 10 models used to try to enhance our 
+
+# We will generate an ensemble with the 10 models used to try to enhance our 
 # predictions
 
 # This function returns a value of 1 if the patient under review was predicted with a
@@ -918,18 +937,30 @@ ensemble_res <- return_value(  change_value(glm_predictions) +
                                change_value(pda2_predictions))
 
 # General ensemble accuracy
-mean(ensemble_res == test_y)
-sum(ensemble_res=="S")
+model_accuracy <- mean(ensemble_res == test_y)
+stroke_patients_predicted <- sum(ensemble_res=="S")
+# Adding the results of the general ensemble model
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "General Ensemble", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Show the table with all the values
+accuracy_results %>% knitr::kable()
 
-# Combination of all predictions to try to get a better prediction in the ensemble
+
+# Combination of the better 5 models in the "optimal" ensemble
 ensemble_res_optimal <- return_value_opt( change_value(glm_predictions) + 
                                             change_value(gamloess_predictions) +
                                             change_value(knn_predictions) + 
                                             change_value(rf_predictions) +
                                             change_value(bayesglm_predictions))
 # Optimal ensemble accuracy
-mean(ensemble_res_optimal == test_y)
-sum(ensemble_res_optimal=="S")
+model_accuracy <- mean(ensemble_res_optimal == test_y)
+stroke_patients_predicted <- sum(ensemble_res_optimal=="S")
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "Optimal Ensemble", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Show the table with all the values
+accuracy_results %>% knitr::kable()
 
 # Cleaning of Variables
 rm(k,generate_bam,generate_bayesglm,generate_cforest,generate_glm,generate_knn)
