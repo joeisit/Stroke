@@ -910,20 +910,17 @@ accuracy_results %>% knitr::kable()
 change_value <- function(item) {
   values <- ifelse(item == "S",1,0)
 }
-
 # This value evaluates if 6 or more give a "Stroke" value we return "Stroke" if
 # not the patient is Healthy based on the combination of predictions from all the models
 return_value <- function(item) {
   valores <- ifelse(item >= 6 , "S","H")
 }
-
 # This value evaluates if 3 or more give a "Stroke" value we return "Stroke" if
 # not the patient is Healthy based on the combination of predictions from the 5 more
 # accurate models models
 return_value_opt <- function(item) {
   valores <- ifelse(item >= 3 , "S","H")
 }
-
 # Combination of all predictions to try to get a better prediction in the ensemble
 ensemble_res <- return_value(  change_value(glm_predictions) + 
                                change_value(qda_predictions) +

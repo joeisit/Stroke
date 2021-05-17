@@ -45,11 +45,11 @@ Our brain controls our movements, stores our memories, and it is the source of o
 Our brain uses 20% of the oxygen we breathe and the arteries deliver our oxigen-rich blood to all the sections of our brain.
 
 ```{r image stroke, echo=FALSE, fig.align='center', out.width="50%"}
-knitr::include_graphics("images/about_stroke.jpg")
+knitr::include_graphics("images/about_stroke.png")
 ```
 
 \begin{center}
-\scriptsize {Image taken from CDC.gob}
+\scriptsize {Image taken from Mayo Foundation for Medical Education and Research}
 \end{center}
 
 \begin{center}
@@ -856,7 +856,7 @@ mean(gamloess_predictions == test_y)
 sum(gamloess_predictions=="S")
 ```
 
-\textcolor{blueJoe}{3) K-Nearest Neighbo (knn)r: }
+\textcolor{blueJoe}{3) K-Nearest Neighbor (knn): }
 
 The following code executes the Model and shows the accuracy and the actual predictions for stroke:
 
@@ -975,16 +975,338 @@ Looks a good balance between both sets, almost the same percentage of stroke pat
 
 &nbsp;
 
+\pagebreak
+
 \begin{center}
 \large { \textcolor{blueJoe}{\textbf{MODELS EXECUTED WITH ADJUSTED SET}} }
 \end{center}
 
+Now we will re-execute the 3 models plus others to try to get the more accurate model with the adjusted dataset.
 
-\pagebreak
+\textcolor{blueJoe}{1) Generalized Linear Model (glm): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj glm, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "glm" to the training set
+generate_glm <- train(train_x, train_y, method = "glm")
+# Then with the generated model we create the predictions for the test set
+glm_predictions <- predict(generate_glm, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(glm_predictions == test_y)
+# How many patients calculate with stroke
+stroke_patients_predicted <- sum(glm_predictions=="S")
+# I generate a Table with all the Methods and the Accuracy of each
+accuracy_results <- data.frame(METHOD = "glm", ACCURACY = model_accuracy, 
+                               STROKE_PATIENTS = stroke_patients_predicted)
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{2) Quadratic Discriminant Analysis (qda): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj qda, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "qda" to the training set
+generate_qda <- train(train_x, train_y, method = "qda")
+# Then with the generated model we create the predictions for the test set
+qda_predictions <- predict(generate_qda, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(qda_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(qda_predictions=="S")
+# Adding the results of the model qda
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "qda", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{3) Generalized Additive Model for LOESS: }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj gamLoess, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "gamLoess" to the training set
+generate_loess <- train(train_x, train_y, method = "gamLoess")
+# Then with the generated model we create the predictions for the test set
+gamloess_predictions <- predict(generate_loess, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(gamloess_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(gamloess_predictions=="S")
+# Adding the results of the model gamLoess
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "gamLoess", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{4) K-Nearest Neighbor (knn): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj knn, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method knn to the training set
+generate_knn <- train(train_x, train_y, method = "knn",
+                      tuneGrid = data.frame(k = seq(1,40,2)))
+# Then with the generated model we create the prediction for the test set
+knn_predictions <- predict(generate_knn, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(knn_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(knn_predictions=="S")
+# Adding the results of the model knn
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "knn", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{5) Random Forest (rf): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj rf, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method rf to the training set
+# We apply the tuning from 9 to 11 
+tuning <- data.frame(mtry = c(  9, 11))
+# We apply the method rf
+generate_rf <- train(train_x, train_y, method = "rf",
+                     tuneGrid = tuning, importance = TRUE)
+# Then with the model we create the prediction for the test set
+rf_predictions <- predict(generate_rf, test_x)
+# How many patients calculate with Stroke
+model_accuracy <- mean(rf_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(rf_predictions=="S")
+# Adding the results of the model rf
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "rf", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{6) K-Means clustering algorithm  (k-means): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj k-means, echo=TRUE, message=FALSE, warning=FALSE}
+# The predict_kmeans() function defined here takes two arguments - a matrix of
+# observations x and a k-means object k - and assigns each row of x to a cluster
+# from k.
+predict_kmeans <- function(x, k) {
+  centers <- k$centers    # extract cluster centers
+  # calculate distance to cluster centers
+  distances <- sapply(1:nrow(x), function(i){
+    apply(centers, 1, function(y) dist(rbind(x[i,], y)))
+  })
+  max.col(-t(distances))  # select cluster with min distance to center
+}
+# Perform k-means clustering on the training set with 2 
+# centers and assign the output to k. 
+k <- kmeans(train_x, centers = 2)
+# Calculate the predictions with the different "k"
+kmean_predictions <- ifelse(predict_kmeans(test_x,k)==1,"S", "H")
+# Calculate the accuracy of the model kmean
+model_accuracy <- mean(kmean_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(kmean_predictions=="S")
+# Adding the results of the model k-means
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "k-means", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{7) More optimal Generalized Additive Model  (bam): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj bam, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "bam" to the training set
+generate_bam <- train(train_x, train_y, method = "bam")
+# Then with the generated model we create the predictions for the test set
+bam_predictions <- predict(generate_bam, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(bam_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(bam_predictions=="S")
+# Adding the results of the model bam
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "bam", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{8) Conditional Random Forest (cForest): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj cForest, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "cforest" to the training set
+# We apply the tuning from 3 to 7 of odd numbers
+tuning <- data.frame(mtry = c(3, 5, 7))
+# apply the model
+generate_cforest <- train(train_x, train_y, method = "cforest",
+                          tuneGrid = tuning)
+# Then with the generated model we create the predictions for the test set
+cforest_predictions <- predict(generate_cforest, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(cforest_predictions == test_y)
+# How many patients calculate with Stroke
+stroke_patients_predicted <- sum(cforest_predictions=="S")
+# Adding the results of the model cforest
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "cforest", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{9) Bayesian generalized linear models (bayesglm): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj bayesglm, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "bayesglm" to the training set
+generate_bayesglm <- train(train_x, train_y, method = "bayesglm")
+# Then with the generated model we create the predictions for the test set
+bayesglm_predictions <- predict(generate_bayesglm, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(bayesglm_predictions == test_y)
+# How many patients calculate with stroke
+stroke_patients_predicted <- sum(bayesglm_predictions=="S")
+# Adding the results of the model bayesglm
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "bayesglm", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Table of output
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{10) Penalized Discriminant Analysis (pda2): }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj pda2, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "pda2" to the training set
+generate_pda2 <- train(train_x, train_y, method = "pda2")
+# Then with the generated model we create the predictions for the test set
+pda2_predictions <- predict(generate_pda2, test_x)
+# We calculate the accuracy of the prediction
+model_accuracy <- mean(pda2_predictions == test_y)
+# How many patients calculate with stroke
+stroke_patients_predicted <- sum(pda2_predictions=="S")
+# Adding the results of the model pda2
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "pda2", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Show the table with all the values
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{11) General Ensemble with 10 models: }
+
+Trying to analyze if the combination of the 10 models provides a better accuracy for the prediction
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj general ensemble, echo=TRUE, message=FALSE, warning=FALSE}
+# We will generate an ensemble with the 10 models used to try to enhance our 
+# predictions
+
+# This function returns a value of 1 if the patient under review was predicted with a
+# stroke, if not 0 if he was healthy
+change_value <- function(item) {
+  values <- ifelse(item == "S",1,0)
+}
+# This value evaluates if 6 or more give a "Stroke" value we return "Stroke" if
+# not the patient is Healthy based on the combination of predictions from all the models
+return_value <- function(item) {
+  valores <- ifelse(item >= 6 , "S","H")
+}
+# This value evaluates if 3 or more give a "Stroke" value we return "Stroke" if
+# not the patient is Healthy based on the combination of predictions from the 5 more
+# accurate models models
+return_value_opt <- function(item) {
+  valores <- ifelse(item >= 3 , "S","H")
+}
+# Combination of all predictions to try to get a better prediction in the ensemble
+ensemble_res <- return_value(  change_value(glm_predictions) + 
+                               change_value(qda_predictions) +
+                               change_value(gamloess_predictions) +
+                               change_value(knn_predictions) + 
+                               change_value(rf_predictions) +
+                               change_value(kmean_predictions) +
+                               change_value(bam_predictions) +
+                               change_value(cforest_predictions) +
+                               change_value(bayesglm_predictions) + 
+                               change_value(pda2_predictions))
+
+# General ensemble accuracy
+model_accuracy <- mean(ensemble_res == test_y)
+stroke_patients_predicted <- sum(ensemble_res=="S")
+# Adding the results of the general ensemble model
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "General Ensemble", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Show the table with all the values
+accuracy_results %>% knitr::kable()
+```
+
+\textcolor{blueJoe}{12) Optimized Ensemble with best 5 models models: }
+
+Trying to analyze if the combination of the best accuracy 5 models provides a better accuracy for the prediction
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r adj optimized ensemble, echo=TRUE, message=FALSE, warning=FALSE}
+# Combination of the better 5 models in the "optimal" ensemble
+ensemble_res_optimal <- return_value_opt( change_value(glm_predictions) + 
+                                            change_value(gamloess_predictions) +
+                                            change_value(bam_predictions) + 
+                                            change_value(rf_predictions) +
+                                            change_value(bayesglm_predictions))
+# Optimal ensemble accuracy
+model_accuracy <- mean(ensemble_res_optimal == test_y)
+stroke_patients_predicted <- sum(ensemble_res_optimal=="S")
+accuracy_results <- bind_rows(accuracy_results,
+                              data.frame(METHOD = "Optimal Ensemble", ACCURACY = model_accuracy, 
+                                         STROKE_PATIENTS = stroke_patients_predicted))
+# Show the table with all the values
+accuracy_results %>% knitr::kable()
+
+# Cleaning of Variables
+rm(k,generate_bam,generate_bayesglm,generate_cforest,generate_glm,generate_knn)
+rm(generate_loess, generate_pda2, generate_qda, generate_rf,tuning)
+rm(bam_predictions,bayesglm_predictions,cforest_predictions,gamloess_predictions)
+rm(glm_predictions,knn_predictions,qda_predictions,rf_predictions,pda2_predictions)
+```
 
 
 \begin{center}
 \Large { \textcolor{blue}{\textbf{CONCLUSION} } }
 \end{center}
 
+The best model and prediction was the Random Forest model, I believe that we might be missing additional information or predictors to be more accurately define when a patient will potentially get a stroke. With the maximum accuracy of 79% based on the model, we are still far from an optimal target of 90% to 95% that is ideal. There might be better algorithms, however we can  confirm that as age progresses it tends to increment the probability of a stroke as well as high levels of glucose  combined with patients that have worked, however it seems that because of the relatively small number of patients with maybe limited predictors we were not able to be more accurated than 79%, however maybe other predictors like cholesterol or vascular risk factor and other metabolic factors as well as depression and anxiety could complement the dataset and could help to be more accurate on future studies. 
+
+Stroke is really a very big problem and if we are not able to make more accurate predictions at least we should be aware of how to react very soon... FAST is very important:
+
+```{r Symptoms, echo=FALSE, fig.height=3, fig.width=3 , out.width="50%"}
+knitr::include_graphics("images/symptoms.png")
+```
+
+\begin{center}
+\scriptsize {Image taken from CarePoint Health}
+\end{center}
+
+Dedicated to all the patients that are still struggling to return to normal live after a Stroke.
 
