@@ -574,13 +574,13 @@ stroke_data %>%
 
 In a research of the BMI information we see the following pictures:
 
-```{r Picture BMI distribution, echo=FALSE, fig.align='center', fig.height=4, fig.width=4}
-knitr::include_graphics("images/bmi.jpg")
+```{r Picture BMI distribution, echo=FALSE, fig.align='center', fig.height=2, fig.width=3,out.width="50%"}
+knitr::include_graphics("images/bmi.png")
 ```
 
 
-As seen here, anyone above 50 is extremely obese, so values on top of 50 of BMI seem out of range 
-All the outliers of patients above 50 will be adjusted 50 to avoid distortion in the models
+As seen here, anyone above 50 is extremely obese, so values on top of 56 of BMI seem out of range 
+All the outliers of patients above 50 will be adjusted 56 to avoid distortion in the models
 
 With the following code we will adjust this:
 

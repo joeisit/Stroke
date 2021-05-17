@@ -393,11 +393,7 @@ stroke_data %>%
 
 # In a research of the BMI information we see the following:
 
-
-# Anyone above 50 is extremely obese image from i1.wp.com
-# https://i2.wp.com/www.runsociety.com/wp-content/uploads/2018/01/BMI.png?w=1280&ssl=1
-
-# knitr::include_graphics("images/bmi.jpg")
+# knitr::include_graphics("images/bmi.png")
 
 # All the outliers of patients above 50 will be adjusted 50 to avoid distortion
 # in the models
