@@ -617,9 +617,9 @@ mean(glm_predictions == test_y)
 sum(glm_predictions=="S")
 
 # We apply the method "gamLoess" to the training set
-generate_loess <- train(train_x, train_y, method = "gamLoess")
+generate_gamloess <- train(train_x, train_y, method = "gamLoess")
 # Then with the generated model we create the predictions for the test set
-gamloess_predictions <- predict(generate_loess, test_x)
+gamloess_predictions <- predict(generate_gamloess, test_x)
 # We calculate the accuracy of the prediction
 mean(gamloess_predictions == test_y)
 # How many patients calculate with Stroke
@@ -634,6 +634,9 @@ knn_predictions <- predict(generate_knn, test_x)
 mean(knn_predictions == test_y)
 # How many patients calculate with Stroke
 sum(knn_predictions=="S")
+#Cleaning all the used variables to keep the environment tidy
+rm(generate_glm,generate_knn,generate_gamloess)
+rm(gamloess_predictions,glm_predictions,knn_predictions)
 
 #Stopped, we are not really predicting, we are just generating
 #all registries as Healthy, the bias is the big distribution of 95%
@@ -659,7 +662,7 @@ nrow(positive_stroke_patients)
 health_stroke_patients <- stroke_data_num %>%
   filter(stroke==0)
 
-# Set hte seed to 3
+# Set the seed to 3
 set.seed(3, sample.kind = "Rounding") 
 # Generate a partition of 6% of the healthy patients around 250 registries
 health_index <-createDataPartition(health_stroke_patients$age, times = 1, p = 0.06, list = FALSE)
@@ -695,7 +698,7 @@ train_x <- stroke_data_num_adj[-test_index,1:9]
 train_y <- stroke_data_num_adj[-test_index,10]
 
 # Cleaning the environment
-rm(test_index)
+rm(test_index, stroke_data_num_adj)
 
 # Simplify the models by assigning a categorical response as:
 # 1 = "S" the patient had a Stroke, 0 = "H" the patient is Healthy
@@ -716,7 +719,9 @@ sum(test_y=="S")
 
 # Looks a good balance between both sets, almost the same percentage of stroke patients
 
+###########################
 # Running different Models
+###########################
 
 # We will use the  Generalized Linear Models or "glm" first
 

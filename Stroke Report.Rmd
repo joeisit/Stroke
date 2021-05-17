@@ -774,12 +774,209 @@ The following is the Headmap of the predictors:
 heatmap(cor(stroke_data_num), margins = c(6,6))
 ```
 
- 
-&nbsp;
+The full dataset will be split to 80% of a training set and 20% test sets by using the following code:
 
+```{r Split of Full DataSet, echo=TRUE, warning=FALSE}
+# Set seed to 5 to have always the same results and it generate
+# and already review that there is a  balance betweeen the Stroke patients of
+# the train and test set
+set.seed(5, sample.kind = "Rounding") 
+#We need to first create a partition of the dataset for training 80% and 20% testing
+test_index <- createDataPartition(stroke_data_num$stroke, times = 1, p = 0.2, list = FALSE)
+# Generate the sets for the models:
+# For convenience and more clarity we will split in "x" the predictors and 
+# "y" the actual value of stroke or not stoke
+test_x <- stroke_data_num[test_index,1:9]
+test_y <- stroke_data_num[test_index,10]
+train_x <- stroke_data_num[-test_index,1:9]
+train_y <- stroke_data_num[-test_index,10]
+```
+
+Assigning "S" to the patients with Stroke and and "H" to the Healthy patients, this will help in having a Categorical response instead of 0 and 1, so that the models generate "S" or "H" as the output of the models, this code will generate this changes to the dataset of Testing and Training.
+
+```{r Change to Categorical, echo=TRUE}
+train_y <- ifelse(train_y==1,"S","H")
+test_y  <- ifelse(test_y==1,"S","H")
+```
+
+Verify the percentage of stroke patients in the training set and also the amount of stroke patients by executing this code:
+
+```{r Porcentage of Full Training Set, echo=TRUE, warning=FALSE}
+sum(train_y=="S")/length(train_y)
+# How many stroke patients in Training set
+sum(train_y=="S")
+```
+
+Verify the percentage of stroke patients in the test set and also the amount of stroke patients by executing this code:
+
+```{r Porcentage Full test set, echo=TRUE, warning=FALSE}
+sum(test_y=="S")/length(test_y)
+# How many stroke patients in Test set
+sum(test_y=="S")
+```
+
+We have a very reasonable balance between both sets, almost the same percentage of stroke patients
 
 \begin{center}
-\large { \textcolor{blueJoe}{\textbf{MODELS}} }
+\large { \textcolor{blueJoe}{\textbf{MODELS WITH THE FULL SET}} }
+\end{center}
+
+
+We will run the following models: 
+
+
+\textcolor{blueJoe}{1) Generalized Linear Model: }
+
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r Run Full glm model, echo=TRUE, warning=FALSE}
+# We apply the method "glm" to the training set
+generate_glm <- train(train_x, train_y, method = "glm")
+# Then with the generated model we create the predictions for the test set
+glm_predictions <- predict(generate_glm, test_x)
+# We calculate the accuracy of the prediction
+mean(glm_predictions == test_y)
+# How many patients calculate with stroke
+sum(glm_predictions=="S")
+```
+
+\textcolor{blueJoe}{2) Generalized Additive Model for LOESS: }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r Run gamLoess Full, echo=TRUE, message=FALSE, warning=FALSE}
+# We apply the method "gamLoess" to the training set
+generate_gamloess <- train(train_x, train_y, method = "gamLoess")
+# Then with the generated model we create the predictions for the test set
+gamloess_predictions <- predict(generate_gamloess, test_x)
+# We calculate the accuracy of the prediction
+mean(gamloess_predictions == test_y)
+# How many patients calculate with Stroke
+sum(gamloess_predictions=="S")
+```
+
+\textcolor{blueJoe}{3) K-Nearest Neighbo (knn)r: }
+
+The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+
+```{r Run knn in Full Set, echo=TRUE, warning=FALSE}
+# We apply the method knn to the training set
+generate_knn <- train(train_x, train_y, method = "knn",
+                      tuneGrid = data.frame(k = seq(1,40,2)))
+# Then with the generated model we create the prediction for the test set
+knn_predictions <- predict(generate_knn, test_x)
+# We calculate the accuracy of the prediction
+mean(knn_predictions == test_y)
+# How many patients calculate with Stroke
+sum(knn_predictions=="S")
+#Cleaning all the used variables to keep the environment tidy
+rm(generate_glm,generate_knn,generate_gamloess)
+rm(gamloess_predictions,glm_predictions,knn_predictions)
+```
+
+Stopping the execution because we are not really predicting, we are just generating all predictions as Healthy, and the dataset has a bias, because there is a big distribution of 95% of the dataset as Healthy so really we are not generating any predictions for Stroke patients. So we are going to adjust the dataset to have close to 50% patients with stroke and 50% of aleatory healthy patients, so our models will predict the potential stroke and healthy patients based on the 9 predictors.
+
+\textcolor{blueJoe}{Adjusting the dataset to produce a more balance dataset between Stroke and Healthy Patients: }
+
+Passing all the stroke patients to a temporary dataset with the following code:
+
+```{r Stroke Temp Datast, echo=TRUE, warning=FALSE}
+# Pass all Stroke patients to a dataset subset
+positive_stroke_patients <- stroke_data_num %>%
+  filter(stroke==1)
+```
+
+Calculating the amount of patients with strokes with the following code:
+
+```{r Number of patients with stroke, echo=TRUE, warning=FALSE}
+nrow(positive_stroke_patients)
+```
+
+The set has 249 patients with Stroke
+
+Passing all the Healthy patients to a temporary dataset with the following code:
+
+```{r Temporary dataset of Healthy, echo=TRUE, warning=FALSE}
+# Generate a subset of all helthy patients
+health_stroke_patients <- stroke_data_num %>%
+  filter(stroke==0)
+```
+
+
+Based on the full size of this healthy dataset we are going to partition 6% of the set and with that produce a similar size dataset to the stroke dataset with the following code:
+
+```{r Partition Healthy Dataset, echo=TRUE, warning=FALSE}
+# Set the seed to 3
+set.seed(3, sample.kind = "Rounding") 
+# Generate a partition of 6% of the healthy patients around 250 registries
+health_index <-createDataPartition(health_stroke_patients$age, times = 1, p = 0.06, list = FALSE)
+# Generate this new healthy patients subset 
+health_stroke_patients <- health_stroke_patients[health_index,1:10]
+```
+
+Calculating the amount of healthy patients with the following code:
+
+```{r Count of records in Healthy, echo=TRUE, warning=FALSE}
+nrow(health_stroke_patients)
+```
+
+The set has 294 healthy patients 
+
+Now with the following code we combine both sets to have a more balance dataset and without any bias for healthy patients and also calculate the count of patients:
+
+```{r Combine sets, echo=TRUE}
+# Combine the stroke patients with the generated subset
+stroke_data_num_adj <- positive_stroke_patients %>%
+  union(health_stroke_patients)
+# Visualize the new size of the dataset
+nrow(stroke_data_num_adj)
+# Cleaning the environment of the temporary objects
+rm(health_stroke_patients,positive_stroke_patients, health_index)
+```
+
+With  the following code we are going to split again but with this adjusted dataset 80% of records in the training set and 20% in the test set:
+
+```{r SPlit the Adj dataset, echo=TRUE, warning=FALSE}
+# Set seed to 5 to have always the same results and it generate
+# and already review that there is a  balance betweeen the Stroke patients of
+# the train and test set
+set.seed(5, sample.kind = "Rounding") 
+#We need to first create a partition of the dataset for training 80% and 20% testing
+test_index <- createDataPartition(stroke_data_num_adj$stroke, times = 1, p = 0.2, list = FALSE)
+# Generate the sets for the models:
+# For convenience and more clarity we will split in "x" the predictors and 
+# "y" the actual value of stroke or not stoke
+test_x <- stroke_data_num_adj[test_index,1:9]
+test_y <- stroke_data_num_adj[test_index,10]
+train_x <- stroke_data_num_adj[-test_index,1:9]
+train_y <- stroke_data_num_adj[-test_index,10]
+
+# Cleaning the environment
+rm(test_index, stroke_data_num_adj)
+```
+
+Applying the same logic we used before to adjust the output of the models to categorical values with thte following code and verifying that we have a reasonable balance between both set of the stroke patients as well as know the amount of stroke patients in each set:
+
+```{r Adj categorical and percentage, echo=TRUE, warning=FALSE}
+train_y <- ifelse(train_y==1,"S","H")
+test_y  <- ifelse(test_y==1,"S","H")
+# Calculate the % of stoke patients in the train set
+sum(train_y=="S")/length(train_y)
+# How many stroke patients in Training set
+sum(train_y=="S")
+# Calculate the % of stoke patients in the test set
+sum(test_y=="S")/length(test_y)
+# How many stroke patients in Test set
+sum(test_y=="S")
+```
+
+Looks a good balance between both sets, almost the same percentage of stroke patients so we will now perform the models again:
+
+&nbsp;
+
+\begin{center}
+\large { \textcolor{blueJoe}{\textbf{MODELS EXECUTED WITH ADJUSTED SET}} }
 \end{center}
 
 
