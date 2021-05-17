@@ -561,7 +561,7 @@ corrplot::corrplot(cor(stroke_data_num),method = "number",
 stroke_data_num <- subset( stroke_data_num, select = -ever_married )
 
 # Show the heatmap of the stroke dataset
-heatmap(cor(stroke_data_num), margins = c(6,6))
+heatmap(cor(stroke_data_num), margins = c(7.8,7.8), Colv=NA, Rowv=NA, scale='none')
 
 ##########################
 # WORK WITH FULL DATASET #

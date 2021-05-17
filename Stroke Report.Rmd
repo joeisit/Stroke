@@ -755,7 +755,7 @@ rm(age_mean,age_sd,bmi_mean,bmi_sd,glucose_mean,glucose_sd)
 
 This is the correlation matrix:
 
-```{r Correlation Matrix, echo=FALSE, fig.align='center', fig.height=6, fig.width=6}
+```{r Correlation Matrix, echo=FALSE, fig.align='center', fig.height=6, fig.width=6, out.width="50%"}
 corrplot::corrplot(cor(stroke_data_num),method = "number",
           bg="#000000", 
           na.label.col = "#FFFFFF")
@@ -770,8 +770,8 @@ stroke_data_num <- subset( stroke_data_num, select = -ever_married )
  
 The following is the Headmap of the predictors: 
 
-```{r HeatMap, echo=FALSE, fig.height=4, fig.width=4, fig.align='center'}
-heatmap(cor(stroke_data_num), margins = c(6,6))
+```{r HeatMap, echo=FALSE, fig.height=4, fig.width=4, fig.align='center', out.width="40%"}
+heatmap(cor(stroke_data_num), margins = c(7.8,7.8), Colv=NA, Rowv=NA, scale='none')
 ```
 
 The full dataset will be split to 80% of a training set and 20% test sets by using the following code:
@@ -816,6 +816,8 @@ sum(test_y=="S")
 ```
 
 We have a very reasonable balance between both sets, almost the same percentage of stroke patients
+
+\pagebreak
 
 \begin{center}
 \large { \textcolor{blueJoe}{\textbf{MODELS WITH THE FULL SET}} }
@@ -972,8 +974,6 @@ sum(test_y=="S")
 ```
 
 Looks a good balance between both sets, almost the same percentage of stroke patients so we will now perform the models again:
-
-&nbsp;
 
 \pagebreak
 
@@ -1293,14 +1293,16 @@ rm(glm_predictions,knn_predictions,qda_predictions,rf_predictions,pda2_predictio
 
 
 \begin{center}
-\Large { \textcolor{blue}{\textbf{CONCLUSION} } }
+\Large { \textcolor{blue}{\textbf{CONCLUTION} } }
 \end{center}
 
 The best model and prediction was the Random Forest model, I believe that we might be missing additional information or predictors to be more accurately define when a patient will potentially get a stroke. With the maximum accuracy of 79% based on the model, we are still far from an optimal target of 90% to 95% that is ideal. There might be better algorithms, however we can  confirm that as age progresses it tends to increment the probability of a stroke as well as high levels of glucose  combined with patients that have worked, however it seems that because of the relatively small number of patients with maybe limited predictors we were not able to be more accurated than 79%, however maybe other predictors like cholesterol or vascular risk factor and other metabolic factors as well as depression and anxiety could complement the dataset and could help to be more accurate on future studies. 
 
 Stroke is really a very big problem and if we are not able to make more accurate predictions at least we should be aware of how to react very soon... FAST is very important:
 
-```{r Symptoms, echo=FALSE, fig.height=3, fig.width=3 , out.width="50%"}
+&nbsp;
+
+```{r Symptoms, echo=FALSE, fig.height=3, fig.width=3 , out.width="50%", fig.align='center'}
 knitr::include_graphics("images/symptoms.png")
 ```
 
