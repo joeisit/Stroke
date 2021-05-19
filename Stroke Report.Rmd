@@ -39,10 +39,10 @@ May 2020
   
 &nbsp;  
   
-Stroke is one of the leading causes of death globally. Sometimes it is also called a brain attack. A stroke happens when something is blocking the blood supply to a part of the brain. Also, a Stroke happens when a vessel in the brain bursts. In either case, this stops the flow of blood and due to this, part of the brain becomes damage or dies. Unfortunately, when this happens it can cause lasting brain damage, long-term disability and even in some cases the death.
-Our brain controls our movements, stores our memories, and it is the source of our thoughts, emotions and our language. Besides these functions also the brain controls functions like breathing and controls our digestion.
+Stroke is one of the leading causes of death globally. Sometimes it is also called a brain attack. A stroke happens when the blood supply to part of the brain is blocked. Also, a stroke happens when a blood vessel in the brain bursts. In either case, this stops the flow of blood and due to this, part of the brain becomes damaged or dies. Unfortunately, when this happens it can cause lasting brain damage, long-term disability, and in some cases, death.
+Our brain controls our movements, stores our memories, is the source of our thoughts, emotions, and our language. Besides these functions the brain also controls functions like breathing.
 
-Our brain uses 20% of the oxygen we breathe, and the arteries deliver our oxigen-rich blood to all the sections of our brain.
+Our brain uses 20% of the oxygen we breathe, and the arteries deliver our oxygen-rich blood to all the sections of our brain.
 
 ```{r image stroke, echo=FALSE, fig.align='center', out.width="50%"}
 knitr::include_graphics("images/about_stroke.png")
@@ -53,15 +53,16 @@ knitr::include_graphics("images/about_stroke.png")
 \end{center}
 
 \begin{center}
-\footnotesize {A stroke happens when a blood clot blocks blood flow to the \\ brain or when there is a bursts that prevents the flow of blood} 
+\footnotesize {A stroke happens when a blood clot blocks blood flow to the \\ brain or when there is a brain blood vessel burst that prevents the flow of blood} 
 \end{center}
 
 &nbsp;
 
-The stroke is the third major cause of disability. Long term disability affects people severely, in terms of their productive life.
-The aim of this report is to identify the risk factors and with them be able to predict if someone has high risk of having a Stroke.
+Stroke is the third major cause of disability. Long term disability affects people severely, in terms of their productive life.
+The aim of this report is to identify risk factors, and then, using them, to be able to predict if someone has a high risk of having a stroke.
 
-The patient dataset  was obtain from [**Kaggle**](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset/) the process and methods to ascertain whether a variable is a risk factor will be evaluated and described. We will visualize and discover insights of the dataset, ending with a conclusion and some ideas and suggestions for future work on the research for early symptoms that could help prevent an actual Stroke.
+
+The patient dataset  was obtained from  [**Kaggle**](https://www.kaggle.com/fedesoriano/stroke-prediction-dataset/). The processes and methods to ascertain whether a variable is a risk factor will be evaluated and described. We will visualize and discover insights of the dataset, ending with a conclusion, some ideas and suggestions for future work on research for early symptoms that could help prevent an actual stroke
 
 From Kaggle we get the description of the columns in our dataset:
 
@@ -81,7 +82,7 @@ From Kaggle we get the description of the columns in our dataset:
 
 *Note: "Unknown" in smoking_status means that the information is unavailable for this patient
 
-In the next section we will first do a data preprocessing and then we will execute the exploratory data analysis and then work on the models.
+In the next section we will first do data preprocessing, then we will execute the exploratory data analysis, and then work on the models.
 
 \pagebreak
 
@@ -117,7 +118,7 @@ dim(stroke_data)
 ```
 
 
-We have 5110 records and 12 columns, 11 potential predictors and the column that indicates if the patient got actually a stroke or not.
+We have 5110 records and 12 columns, 11 potential predictors, and the column that indicates if the patient actually suffered a stroke or not.
 
 Now we will be exploring one by one the potential predictors:
 
@@ -125,7 +126,7 @@ Now we will be exploring one by one the potential predictors:
 
 \textcolor{blueJoe}{\textbf{1) ID : Unique Identifier } }
 
-This is a number to identify the patient but it is irrelevant because does not provide any meaningful information for our future models so we will delete this column from our dataset by applying this code: 
+This is a number to identify the patient but it is irrelevant because it does not provide any meaningful information for our future models so we will delete this column from our dataset by applying this code: 
 
 ```{r eliminate id, echo=TRUE}
 stroke_data <- subset( stroke_data, select = -id )
@@ -136,7 +137,7 @@ stroke_data <- subset( stroke_data, select = -id )
 \textcolor{blueJoe}{\textbf{2) Gender: The specific gender of the patients } }
 
 
-With the following will generate the actual distribution of the gender within the dataset:
+With the following we will generate the actual distribution of the gender within the dataset:
 
 ```{r Gender distribution, echo=TRUE}
 stroke_data %>%
@@ -144,7 +145,7 @@ stroke_data %>%
   summarise(total = n())
 ```
 
-We see that there is just one record of an "Other" gender, having just one record is insignificant to the dataset and the future prediction models so we will eliminate it from the dataset using this code:
+We see that there is just one record of an "Other" gender. Having just one record is insignificant to the dataset and for the future prediction models, so we will eliminate it from the dataset using this code:
 
 ```{r Elimiate Other, echo=TRUE}
 stroke_data <- subset (stroke_data, stroke_data$gender !="Other")
@@ -214,7 +215,7 @@ stroke_data %>%
                                    face = "bold", hjust = 0.5)) 
 ```
 
-With the following Boxplot we can see very clear that there is a tendency for older patient to have a Stroke:
+With the following boxplot we can see very clearly that there is a tendency for older patient to have a stroke:
 
 ```{r BoxPlot Age vs Status, echo=FALSE, fig.height=2, fig.width=3, fig.align='center'}
 stroke_data %>%
@@ -242,7 +243,7 @@ stroke_data %>%
 \textcolor{blueJoe}{\textbf{4) Hypertension: Information if the patient had hypertension or not } }
 
 
-With the following code we visualized the total patients that have hypertension and the ones without hypertension
+With the following code we visualized the total patients that have hypertension and the ones without hypertension.
 
 ```{r Distribution Hypertension, echo=TRUE}
 stroke_data %>%
@@ -251,7 +252,7 @@ stroke_data %>%
   summarise(total = n())
 ```
 
-Showing in a pie chart the hypertension distribution within our set:
+Pie chart with the hypertension distribution within our set:
 
 ```{r Chart of Hypertension, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
 stroke_data %>%
@@ -280,12 +281,12 @@ stroke_data %>%
 
 &nbsp;
 
-\textcolor{blueJoe}{\textbf{5) Heart Disease: Information if the patient had a problem in his heart or not } }
+\textcolor{blueJoe}{\textbf{5) Heart Disease: Information if the patient had a heart problem or not } }
 
 &nbsp;
 
 
-With the following code we visualized the total patients that have heart problems and the ones without any problem in their heart
+With the following code we visualized the total patients that have had heart problems and the ones without.
 
 ```{r Distribution of Heart Problem, echo=TRUE}
 stroke_data %>%
@@ -294,7 +295,7 @@ stroke_data %>%
   summarise(total = n())
 ```
 
-The following pie chart shows the distribution of the patients with problems in their heart:
+The following pie chart shows the distribution of patients with heart problems:
 
 &nbsp;
 
@@ -329,7 +330,7 @@ stroke_data %>%
 \textcolor{blueJoe}{\textbf{6) ever\_married: Information if the patient had been married or not } }
 
 
-With the following code we are able to visualize how many patients were married and how many were never married:
+With the following code we visualize how many patients were married and how many never married:
 
 ```{r Number of married patients, echo=TRUE}
 stroke_data %>%
@@ -338,7 +339,7 @@ stroke_data %>%
   summarise(total = n())
 ```
 
-The following pie chart shows the distribution of the Patients that were Married against the ones that were never married:
+The following pie chart shows the distribution of the patients that were married versus the ones that never married:
 
 ```{r Pie Chart of Married, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
 stroke_data %>%
@@ -369,7 +370,7 @@ stroke_data %>%
 
 \textcolor{blueJoe}{\textbf{7) work\_type: We will show the information if the patient have work and what type of work } }
 
-With the following code shows the amount of the patients by their work situation unless they are children:
+The following code shows the amount of patients separated by their work situation, unless they are children:
 
 ```{r Work  type distribution, echo=TRUE}
 stroke_data %>%
@@ -377,7 +378,7 @@ stroke_data %>%
   summarise(total = n())
 ```
 
-With the following code we will show a pie chart with the work distribution of the patients:
+The following code shows a pie chart with the work type distribution of the patients:
 
 ```{r Chart Distribution work type, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
 stroke_data %>%
@@ -405,10 +406,10 @@ stroke_data %>%
 
 &nbsp;
 
-\textcolor{blueJoe}{\textbf{8) Residence\_type: defines where the patient's life in urban area or rural area } }
+\textcolor{blueJoe}{\textbf{8) Residence\_type: defines where the patient's live in urban or rural areas  } }
  
 
-With the following code summarizes where patient's residence is:
+The following code summarizes where the patients’ residences are:
 
 ```{r Distribution of Residence, echo=TRUE}
 stroke_data %>%
@@ -416,7 +417,7 @@ stroke_data %>%
   summarise(total = n())
 ```
 
-The following is a pie chart showing the distribution of the patient's residence:
+A pie chart showing the distribution of the patients’ residences:
 
 ```{r Pie Chart of residence, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
 stroke_data %>%
@@ -454,7 +455,7 @@ summary(stroke_data$avg_glucose_level)
 
 &nbsp;
 
-The following chart shows the distribution in ranges from the lower limit to the higher limit with increments of 10 units:
+This chart shows the distribution, in ranges, from the lower limit to the higher limit in 10 units increments:
 
 ```{r Chart distibution of glucose, echo=FALSE, fig.align='center', fig.height=2, fig.width=3}
 stroke_data %>%
@@ -501,14 +502,14 @@ stroke_data %>%
                                    face = "bold", hjust = 0.5)) 
 ```
 
-The patients with high level of glucose tend to be more prone to have a Stroke.
+Patients with high glucose levels are more prone to have a stroke.
 
 &nbsp;
 
 \textcolor{blueJoe}{\textbf{10) bmi: defines the Body Mass Index of the patients in the set } }
  
 
-Reviewing the information of the Body Mass Index (bmi) levels, there are patients without this information with an N/A in these rows and also we identify that the values of the bmi are strings within the dataset instead of numbers, with the following code we are showing the summary of bmi
+Reviewing Body Mass Index (bmi) levels, there are patients without this information with an N/A in these rows. We also identify that the bmi values are strings within the dataset, instead of numbers. With the following code we are showing the summary of bmi
 
 ```{r summary of bmi, echo=TRUE, warning=FALSE}
 # To avoid warning due to N/A will disable them during this code execution
@@ -516,21 +517,21 @@ options(warn = -1) # To avoid Warning due to N/A
 summary(as.numeric(stroke_data$bmi), na.rm=TRUE)
 ```
 
-With the following code we will review what patients do not have bmi information and had not had any stroke:
+The following code allows review of what patients do not have bmi information and had not had any stroke:
 
 ```{r bmi without stroke, echo=TRUE, warning=FALSE}
 # How many records we have without bmi information and that have not had any stroke
 sum(stroke_data$bmi=="N/A" & stroke_data$stroke==0)
 ```
 
-With the following code we will review what patients that do not have bmi information and had a stroke:
+The following code allows review of what patients that do not have bmi information and had a stroke:
 
 ```{r bmi and stroke, echo=TRUE, warning=FALSE}
 # How many records we have without bmi information and that had a stroke
 sum(stroke_data$bmi=="N/A" & stroke_data$stroke==1)
 ```
 
-Due that these 201 registries ( 161 that have not suffer a stroke and 40 that suffer a stroke ) we consider this relevant for our study and predictions of Stroke, so we will be calculate the average bmi of the dataset using this code:
+Since these 201 registers (161 that did not suffer a stroke and 40 that suffered a stroke ) are relevant for our study and predictions of stroke, we will be calculate the average bmi of the dataset using this code:
 
 ```{r Calculate bmi mean, echo=TRUE, warning=FALSE}
 # Calculate the mean of bmi
@@ -538,7 +539,8 @@ bmimean <- mean(as.numeric(stroke_data$bmi), na.rm = TRUE)
 ```
 
 
-Adding a new column in our dataset with the patients bmi number, instead of the string and for the patients without bmi information the mean of bmi will be assigned to them. The following code achieves this:
+We add a new column in our dataset with the patients bmi number, instead of the string, For the patients without bmi information the mean of bmi will be assigned to them. The following code achieves this:
+
 
 ```{r New column with bmi numbers, echo=TRUE, warning=TRUE}
 stroke_data <- stroke_data %>%
@@ -572,15 +574,16 @@ stroke_data %>%
                                    face = "bold", hjust = 0.5)) 
 ```
 
-In a research of the BMI information, we see the following pictures:
+Analyzing BMI information, we see the following pictures:
 
 ```{r Picture BMI distribution, echo=FALSE, fig.align='center', fig.height=2, fig.width=3,out.width="50%"}
 knitr::include_graphics("images/bmi.png")
 ```
 
 
-As seen here, anyone above 50 is extremely obese, so values on top of 56 of BMI seem out of range 
-All the outliers of patients above 50 will be adjusted 56 to avoid distortion in the models
+As seen here, anyone above 50 is extremely obese, so values above 56 of BMI seem out of range. 
+All patient outliers above 50 will be adjusted 56 to avoid distortion in the models.
+
 
 With the following code we will adjust this:
 
@@ -611,14 +614,14 @@ stroke_data %>%
                                    face = "bold", hjust = 0.5)) 
 ```
 
-We do not see any specific trend with the BMI distribution between healthy patients and patients that had a stroke.
+We do not see any specific trend in BMI distribution between healthy patients and patients that had had a stroke.
 
 &nbsp;
 
 \textcolor{blueJoe}{\textbf{11) smoking\_status: defines the patient relation to smoking } }
  
 
-With the following code we show the distribution of the patients based on their smoking status:
+The following code shows the distribution of the patients based on their smoking status:
 
 ```{r Distribution of Status, echo=TRUE}
 stroke_data %>%
@@ -661,7 +664,7 @@ stroke_data %>%
 \textcolor{blueJoe}{\textbf{Stoke Patient in the Dataset:  } }
 
 
-With the following code we visualize the amount of stoke patients against the health patients in the dataset:
+The following code visualizes the amount of smoking patients versus the healthy patients in the dataset:
 
 ```{r stroke distribution, echo=TRUE}
 stroke_data %>%
@@ -701,8 +704,9 @@ stroke_data %>%
 
 \textcolor{blueJoe}{\textbf{General and preparation for models } }
 
-For a correlation check it only accepts numerical variables and for fitting models, so we are preprocessing all categorical variables to numbers, encoding them.
-Also, we will scale age, avg\_glucose\_level and bmi because if we keep predictors that are measured at different scales they will not contribute equally to our fitting models and could create a bias. To deal with this possible problem we will standardized the age, avg\_glucose\_level and bmi to have a $(\mu =0,\sigma=1)$ before we start the fitting of the models
+A correlation check only accepts numerical variables, which are also used for fitting models, so we are preprocessing all categorical variables to numbers, encoding them.
+Also, we will scale age, avg\_glucose\_level and bmi because if we keep predictors that are measured at different scales they will not contribute equally to our fitting models and could create a bias. To deal with this possible problem we will standardized the age, avg\_glucose\_level and bmi to have a $(\mu =0,\sigma=1)$ before we start the fitting models.
+
 
 The following code achieves all the transformation:
 
@@ -720,7 +724,7 @@ bmi_mean <- mean(stroke_data$bmi_num)
 # sd of bmi
 bmi_sd <- sd(stroke_data$bmi_num)
 
-# We need to change our categorical variables to 
+# We need to change our categorical variables too 
 stroke_data_num <- stroke_data %>%
   # Gender: Female 0, Male 1
   mutate(gender_num=ifelse(gender=="Female",0,1)) %>%
@@ -761,7 +765,9 @@ corrplot::corrplot(cor(stroke_data_num),method = "number",
           na.label.col = "#FFFFFF")
 ```
 
-There seems to be Multicollinearity between age and ever_married because we have a high correlation of 0.68 in principle age contains more information if a patient is susceptible to a stroke and we will discard ever_married from our predictors, the following code will execute this:
+
+There seems to be multicollinearity between age and ever\_married because we have a high correlation of 0.68. In principle, age contains more information if a patient is susceptible to a stroke and we will discard the ever married category from our predictors. The following code will execute this:
+
 
 ```{r Delete ever_married, echo=TRUE, warning=FALSE}
 stroke_data_num <- subset( stroke_data_num, select = -ever_married )
@@ -774,7 +780,7 @@ The following is the Headmap of the predictors:
 heatmap(cor(stroke_data_num), margins = c(7.8,7.8), Colv=NA, Rowv=NA, scale='none')
 ```
 
-The full dataset will be split to 80% of a training set and 20% test sets by using the following code:
+The full dataset will be split:  we use 80% as a training set, and 20% as a test set by using the following code:
 
 ```{r Split of Full DataSet, echo=TRUE, warning=FALSE}
 # Set seed to 5 to have always the same results and it generate
@@ -792,7 +798,7 @@ train_x <- stroke_data_num[-test_index,1:9]
 train_y <- stroke_data_num[-test_index,10]
 ```
 
-Assigning "S" to the patients with Stroke and and "H" to the Healthy patients, this will help in having a Categorical response instead of 0 and 1, so that the models generate "S" or "H" as the output of the models, this code will generate these changes to the dataset of Testing and Training.
+We assign "S" to the patients with Stroke and and "H" to the Healthy patients. This will help in having a categorical response instead of 0 and 1, so that the models generate "S" or "H" as the output of the models. This code will generate these changes to the dataset of Testing and Training.
 
 ```{r Change to Categorical, echo=TRUE}
 train_y <- ifelse(train_y==1,"S","H")
@@ -815,7 +821,7 @@ sum(test_y=="S")/length(test_y)
 sum(test_y=="S")
 ```
 
-We have a very reasonable balance between both sets, almost the same percentage of stroke patients
+We have a very reasonable balance between both sets, almost the same percentage of stroke patients.
 
 \pagebreak
 
@@ -830,7 +836,7 @@ We will run the following models:
 \textcolor{blueJoe}{1) Generalized Linear Model: }
 
 
-The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+The following code executes the model and shows the accuracy and the actual predictions for stroke:
 
 ```{r Run Full glm model, echo=TRUE, warning=FALSE}
 # We apply the method "glm" to the training set
@@ -845,7 +851,7 @@ sum(glm_predictions=="S")
 
 \textcolor{blueJoe}{2) Generalized Additive Model for LOESS: }
 
-The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+The following code executes the model and shows the accuracy and the actual predictions for stroke:
 
 ```{r Run gamLoess Full, echo=TRUE, message=FALSE, warning=FALSE}
 # We apply the method "gamLoess" to the training set
@@ -860,7 +866,7 @@ sum(gamloess_predictions=="S")
 
 \textcolor{blueJoe}{3) K-Nearest Neighbor (knn): }
 
-The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+The following code executes the model and shows the accuracy and the actual predictions for stroke:
 
 ```{r Run knn in Full Set, echo=TRUE, warning=FALSE}
 # We apply the method knn to the training set
@@ -877,7 +883,9 @@ rm(generate_glm,generate_knn,generate_gamloess)
 rm(gamloess_predictions,glm_predictions,knn_predictions)
 ```
 
-Stopping the execution because we are not really predicting, we are just generating all predictions as Healthy, and the dataset has a bias, because there is a big distribution of 95% of the dataset as healthy so really, we are not generating any predictions for Stroke patients. So we are going to adjust the dataset to have close to 50% patients with stroke and 50% of aleatory healthy patients, so our models will predict the potential stroke and healthy patients based on the 9 predictors.
+The following code executes the model and shows the accuracy and the actual predictions for stroke:
+Because we are not really predicting, just generating all predictions as Healthy, the dataset has a bias, because there is a big distribution of 95% of the dataset as healthy, so we are not generating any predictions for stroke patients. To solve this, we are going to adjust the dataset to have close to 50% patients with stroke and 50% of aleatory healthy patients, so that we can test our models to predict the potential stroke and healthy patients based on the 9 predictors.
+
 
 \textcolor{blueJoe}{Adjusting the dataset to produce a more balance dataset between Stroke and Healthy Patients: }
 
@@ -925,7 +933,7 @@ nrow(health_stroke_patients)
 
 The set has 294 healthy patients 
 
-Now with the following code we combine both sets to have a more balance dataset and without any bias for healthy patients and also calculate the count of patients:
+Now with the following code we combine both sets to have a more balance dataset, without any bias for healthy patient. We also calculate the count of patients:
 
 ```{r Combine sets, echo=TRUE}
 # Combine the stroke patients with the generated subset
@@ -937,7 +945,7 @@ nrow(stroke_data_num_adj)
 rm(health_stroke_patients,positive_stroke_patients, health_index)
 ```
 
-With  the following code we are going to split again but with this adjusted dataset 80% of records in the training set and 20% in the test set:
+With the following code we split again the patients, but this time with the adjusted dataset 80% of records in the training set and 20% in the test set:
 
 ```{r SPlit the Adj dataset, echo=TRUE, warning=FALSE}
 # Set seed to 5 to have always the same results and it generate
@@ -958,7 +966,7 @@ train_y <- stroke_data_num_adj[-test_index,10]
 rm(test_index, stroke_data_num_adj)
 ```
 
-Applying the same logic, we used before to adjust the output of the models to categorical values with thte following code and verifying that we have a reasonable balance between both set of the stroke patients as well as know the amount of stroke patients in each set:
+Applying the same logic we used before to adjust the output of the models to categorical values with the following code, and verifying that we have a reasonable balance between both sets of the stroke patients as well as the amount of stroke patients in each set:
 
 ```{r Adj categorical and percentage, echo=TRUE, warning=FALSE}
 train_y <- ifelse(train_y==1,"S","H")
@@ -973,7 +981,7 @@ sum(test_y=="S")/length(test_y)
 sum(test_y=="S")
 ```
 
-Looks a good balance between both sets, almost the same percentage of stroke patients so we will now perform the models again:
+Looks a good balance between both sets, almost the same percentage of stroke patients, so we will now perform the models again:
 
 \pagebreak
 
@@ -1215,7 +1223,7 @@ accuracy_results %>% knitr::kable()
 
 \textcolor{blueJoe}{11) General Ensemble with 10 models: }
 
-Trying to analyze if the combination of the 10 models provides a better accuracy for the prediction
+This tries to analyze if the combination of the 10 models provides a better accuracy for the prediction.
 
 The following code executes the Model and shows the accuracy and the actual predictions for stroke:
 
@@ -1264,9 +1272,9 @@ accuracy_results %>% knitr::kable()
 
 \textcolor{blueJoe}{12) Optimized Ensemble with best 5 models models: }
 
-Trying to analyze if the combination of the best accuracy 5 models provides a better accuracy for the prediction
+This tries to analyze if the combination of the 5 best accuracy models provides a better accuracy for the prediction.
 
-The following code executes the Model and shows the accuracy and the actual predictions for stroke:
+The following code executes the model and shows the accuracy and the actual predictions for stroke:
 
 ```{r adj optimized ensemble, echo=TRUE, message=FALSE, warning=FALSE}
 # Combination of the better 5 models in the "optimal" ensemble
@@ -1296,9 +1304,11 @@ rm(glm_predictions,knn_predictions,qda_predictions,rf_predictions,pda2_predictio
 \Large { \textcolor{blue}{\textbf{CONCLUTION} } }
 \end{center}
 
-The best model and prediction were the Random Forest model, I believe that we might be missing additional information or predictors to be more accurately define when a patient will potentially get a stroke. With the maximum accuracy of 79% based on the model, we are still far from an optimal target of 90% to 95% that is ideal. There might be better algorithms, however we can  confirm that as age progresses it tends to increment the probability of a stroke as well as high levels of glucose  combined with patients that have worked, however it seems that because of the relatively small number of patients with maybe limited predictors we were not able to be more accurate than 79%, however maybe other predictors like cholesterol or vascular risk factor and other metabolic factors as well as depression and anxiety could complement the dataset and could help to be more accurate on future studies. 
+The best model and prediction were the Random Forest model. I believe that we might be missing additional information or predictors to define more accurately when a patient will potentially get a stroke. With the maximum accuracy of 79% based on the model, we are still far from an optimal target of 90% to 95%, that is ideal. There might be better algorithms. 
+However, we can confirm that as age progresses it tends to increment the probability of a stroke as well as high levels of glucose combined with patients that have worked. Nevertheless, it seems that because of the relatively small number of patients with perhaps limited predictors, we were not able to be more accurate than 79%. Maybe other predictors, like cholesterol and vascular risk factor, and other metabolic factors, as well as depression and anxiety, could complement the dataset and could help in being more accurate in future studies. 
 
-Stroke is really a very big problem and if we are not able to make more accurate predictions at least we should be aware of how to react very soon... FAST is very important:
+
+Stroke is really a very big problem and while we are not able to make more accurate predictions, at least we should be aware of how to react very soon if there are any signals of a potential stroke... FAST is key:
 
 &nbsp;
 
@@ -1310,5 +1320,5 @@ knitr::include_graphics("images/symptoms.png")
 \scriptsize {Image taken from CarePoint Health}
 \end{center}
 
-Dedicated to all the patients that are still struggling to return to normal live after a Stroke.
+Dedicated to all the patients that are still struggling to return to a normal live after a stroke.
 
