@@ -581,8 +581,8 @@ knitr::include_graphics("images/bmi.png")
 ```
 
 
-As seen here, anyone above 50 is extremely obese, so values above 56 of BMI seem out of range. 
-All patient outliers above 50 will be adjusted 56 to avoid distortion in the models.
+As seen here, anyone above 50 is extremely obese, so values above 50 of BMI seem out of range. 
+All patient outliers above 50 will be adjusted 50 to avoid distortion in the models.
 
 
 With the following code we will adjust this:
