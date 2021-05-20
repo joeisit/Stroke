@@ -574,7 +574,7 @@ stroke_data %>%
                                    face = "bold", hjust = 0.5)) 
 ```
 
-Analyzing BMI information, we see the following pictures:
+Analyzing BMI information, we see the following picture:
 
 ```{r Picture BMI distribution, echo=FALSE, fig.align='center', fig.height=2, fig.width=3,out.width="50%"}
 knitr::include_graphics("images/bmi.png")
@@ -883,8 +883,9 @@ rm(generate_glm,generate_knn,generate_gamloess)
 rm(gamloess_predictions,glm_predictions,knn_predictions)
 ```
 
-The following code executes the model and shows the accuracy and the actual predictions for stroke:
-Because we are not really predicting, just generating all predictions as Healthy, the dataset has a bias, because there is a big distribution of 95% of the dataset as healthy, so we are not generating any predictions for stroke patients. To solve this, we are going to adjust the dataset to have close to 50% patients with stroke and 50% of aleatory healthy patients, so that we can test our models to predict the potential stroke and healthy patients based on the 9 predictors.
+The previous models and their accuracy and actual predictions for stroke are not really making a "good" prediction, they are just generating all predictions as Healthy, the dataset has a bias. Because there is a big distribution of 95% of the dataset as healthy, we are not generating any predictions for stroke patients. 
+
+To solve this, we are going to adjust the dataset to have close to 50% patients with stroke and 50% of aleatory healthy patients, so that we can test our models to predict the potential stroke and healthy patients based on the 9 predictors.
 
 
 \textcolor{blueJoe}{Adjusting the dataset to produce a more balance dataset between Stroke and Healthy Patients: }
@@ -966,7 +967,7 @@ train_y <- stroke_data_num_adj[-test_index,10]
 rm(test_index, stroke_data_num_adj)
 ```
 
-Applying the same logic we used before to adjust the output of the models to categorical values with the following code, and verifying that we have a reasonable balance between both sets of the stroke patients as well as the amount of stroke patients in each set:
+Applying the same logic we used before to adjust the output of the models to categorical values with the following code, and verifying that we have a reasonable balance between both sets of the stroke patients as well as the percentage of stroke patients in each set:
 
 ```{r Adj categorical and percentage, echo=TRUE, warning=FALSE}
 train_y <- ifelse(train_y==1,"S","H")
@@ -981,7 +982,7 @@ sum(test_y=="S")/length(test_y)
 sum(test_y=="S")
 ```
 
-Looks a good balance between both sets, almost the same percentage of stroke patients, so we will now perform the models again:
+Achieved a good balance between both sets, almost the same percentage of stroke patients, so we will now perform the models again:
 
 \pagebreak
 
