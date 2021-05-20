@@ -390,7 +390,7 @@ stroke_data %>%
                                    face = "bold", hjust = 0.5)) +
   theme(axis.text.y = element_text(color = "#0000FF", size = 7, 
                                    face = "bold", hjust = 0.5)) 
-
+ 
 # In a research of the BMI information we see the following:
 
 # knitr::include_graphics("images/bmi.png")
